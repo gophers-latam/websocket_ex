@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Works</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+</head>
+
+<body>
+    <main class="container">
+        <h3>File conversor</h3>
+        <form id="frm">
+            <input type="file" id="vid" name="vid" />
+            <button id="send" type="button">Upload and process video</button>
+        </form>
+
+        <div>
+
+        </div>
+    </main>
+
+    <script>
+
+        (async function (w, d) {
+
+            const ui = {
+                form: d.querySelector("#frm"),
+                b: d.querySelector("body"),                
+            };
+
+            ui.b.addEventListener("click", async function (e) {
+                const t = e.target;
+
+                if (t.id == ui.form.send.id) {
+                    //t.disabled = true;
+                    //ui.form.vid.disabled = true;
+
+                    let fd = new FormData();
+                    fd.append("myfile", ui.form.vid.files[0]);
+
+                    const options = {
+                        method: "POST", 
+                        body: fd,
+                    };
+
+                    await fetch("/upload", options);
+                }
+            });
+
+
+            if (typeof (EventSource) !== "undefined") {
+                var source = new EventSource("http://localhost:3500/sse");
+
+                source.onopen = function (e) {
+                    console.log("open connection");
+                };
+
+                source.onmessage = async function (event) {
+                    let filepath = event.data
+                    console.log(filepath);
+
+                    const anchor = d.createElement("a");
+                    anchor.id = filepath;
+                    anchor.display = "none";
+                    anchor.href = "http://localhost:3500/download/" + filepath;
+                    d.body.appendChild(anchor);
+                    anchor.click();
+
+                    anchor.remove();
+                };
+
+                source.onerror = (err) => {
+                    console.log("on error", err);
+                };
+            }
+
+        })(window, document);
+    </script>
+</body>
+
+</html>
